@@ -23,9 +23,20 @@ class Bayes_Classifier:
       if ('negative_counts.dat_2' and 'positive_counts_2.dat') in lFileList:
          self.positive = self.load('positive_counts_2.dat')
          self.negative = self.load('negative_counts_2.dat')
+         self.posCounts = self.positive['total_counts']
+         self.negCounts = self.negative['total_counts']
+         self.posOccurences = float(self.positive['occurences!'])
+         self.negOccurences = float(self.negative['occurences!'])
+         self.totOccurences = self.posOccurences + self.negOccurences
+         print self.posCounts, self.negCounts
       else:
          self.positive, self.negative = self.train()
-         
+         self.posCounts = self.positive['total_counts']
+         self.negCounts = self.negative['total_counts']
+         self.posOccurences = self.positive['occurences!']
+         self.negOccurences = self.negative['occurences!']
+         self.totOccurences = self.posOccurences + self.negOccurences
+
          # ret = self.train()
          # self.positive = ret[0]
          # self.negative = ret[1]
@@ -38,9 +49,9 @@ class Bayes_Classifier:
          lFileList = fFileObj[2]
          break
       
-      
-      positive = {}
-      negative = {}
+
+      positive = {'total_counts': 0, 'occurences!':0}
+      negative = {'total_counts': 0, 'occurences!' : 0}
       
       for filename in lFileList:
          dat = self.loadFile("movies_reviews/" + filename)
@@ -48,18 +59,21 @@ class Bayes_Classifier:
          
          if re.match("movies-5-", filename):
             edit_dict = positive
+            edit_dict['occurences!'] += 1
          else:
             edit_dict = negative
-         
-         
+            edit_dict['occurences!'] += 1
+
          for token in dat:
             token = token.lower()
             if token in string.punctuation:
                continue
             elif token not in edit_dict:
                edit_dict[token] = 1
+               edit_dict['total_counts'] += 1
             else:
                edit_dict[token] += 1
+               edit_dict['total_counts'] += 1
                
       self.save(positive, 'positive_counts_2.dat')
       self.save(negative, 'negative_counts_2.dat')
@@ -103,6 +117,22 @@ class Bayes_Classifier:
       """Given a target string sText, this function returns the most likely document
       class to which the target string belongs (i.e., positive, negative or neutral).
       """
+      dat = self.tokenize(sText)
+      logPositive = 0
+      logNegative = 0
+      for token in dat:
+         if token not in string.punctuation:
+            if token in self.positive:
+               logPositive += math.log((self.positive[token] + 1.0) / self.posCounts)
+
+            if token in self.negative:
+               logNegative += math.log((self.negative[token] + 1.0) / self.negCounts)
+      print logPositive, logNegative
+      print self.posOccurences/self.totOccurences, self.negOccurences/self.totOccurences
+      if ((math.log(self.posOccurences/self.totOccurences)) + logPositive) > (math.log(self.negOccurences/self.totOccurences) * logNegative):
+         return 'Positive'
+      else:
+         return 'Negative'
 
    def loadFile(self, sFilename):
       """Given a file name, return the contents of the file as a string."""
@@ -151,5 +181,6 @@ class Bayes_Classifier:
       return lTokens
 
 classif = Bayes_Classifier()
+print classif.classify("lovely"), classif.positive["lovely"], classif.negative["lovely"]
 
 
