@@ -27,7 +27,7 @@ class Bayes_Classifier:
    
    
    def review_is_positive(self, filename):
-      return re.match("^movies-5-.*$", name)
+      return re.match("^.*movies-5-.*$", name)
    
       
       
