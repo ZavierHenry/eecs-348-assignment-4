@@ -18,52 +18,85 @@ class Bayes_Classifier:
       for fFileObj in os.walk(os.getcwd()): #Checks to see what files are in the current working directory
          lFileList = fFileObj[2]
          break
+      
 
-      if ('negative_counts.dat' and 'positive_counts.dat') in lFileList:
-         self.positive = self.load('positive_counts.dat')
-
-         self.negative = self.load('negative_counts.dat')
+      if ('negative_counts.dat_2' and 'positive_counts_2.dat') in lFileList:
+         self.positive = self.load('positive_counts_2.dat')
+         self.negative = self.load('negative_counts_2.dat')
       else:
-         ret = self.train()
-         self.positive = ret[0]
-         self.negative = ret[1]
+         self.positive, self.negative = self.train()
+         
+         # ret = self.train()
+         # self.positive = ret[0]
+         # self.negative = ret[1]
 
    def train(self):   
       """Trains the Naive Bayes Sentiment Classifier."""
+      
       lFileList = []
       for fFileObj in os.walk("movies_reviews/"):
          lFileList = fFileObj[2]
          break
+      
+      
       positive = {}
       negative = {}
-      for i in range(0, len(lFileList)):
-         filename = lFileList[i].split('-')
-         if len(filename) == 3:
-            if filename[1] == '1':
-               dat = self.loadFile("movies_reviews/" + lFileList[i])
-               dat = "".join(l for l in dat if l not in string.punctuation) #Removes punctuation from the string 
-               dat = dat.split(' ')
-               for each in dat:
-                  each = each.lower()
-                  if each not in negative.keys():
-                     negative[each] = 1
-                  else:
-                     negative[each] = negative[each] + 1
-            elif filename[1] == '5':
-               dat = self.loadFile("movies_reviews/" + lFileList[i])
-               dat = "".join(l for l in dat if l not in string.punctuation) #Removes punctuation from the string 
-               dat = dat.split(' ')
-               for each in dat:
-                  each = each.lower()
-                  if each not in positive.keys():
-                     positive[each] = 1
-                  else:
-                     positive[each] = positive[each] + 1
-
-      self.save(positive, 'positive_counts.dat')
-      self.save(negative, 'negative_counts.dat')
-
-      return(positive, negative)
+      
+      for filename in lFileList:
+         dat = self.loadFile("movies_reviews/" + filename)
+         dat = self.tokenize(dat)
+         
+         if re.match("movies-5-", filename):
+            edit_dict = positive
+         else:
+            edit_dict = negative
+         
+         
+         for token in dat:
+            token = token.lower()
+            if token in string.punctuation:
+               continue
+            elif token not in edit_dict:
+               edit_dict[token] = 1
+            else:
+               edit_dict[token] += 1
+               
+      self.save(positive, 'positive_counts_2.dat')
+      self.save(negative, 'negative_counts_2.dat')
+      
+      return positive, negative
+               
+      
+      
+      
+#       for i in range(0, len(lFileList)):
+#          filename = lFileList[i].split('-')
+#          if len(filename) == 3:
+#             if filename[1] == '1':
+#                dat = self.loadFile("movies_reviews/" + lFileList[i])
+#                dat = "".join(l for l in dat if l not in string.punctuation) #Removes punctuation from the string 
+#                dat = dat.split(' ')
+#                for each in dat:
+#                  each = each.lower()
+#                  if each not in negative.keys():
+#                      negative[each] = 1
+#                   else:
+#                      negative[each] = negative[each] + 1
+#             elif filename[1] == '5':
+#                dat = self.loadFile("movies_reviews/" + lFileList[i])
+#                dat = "".join(l for l in dat if l not in string.punctuation) #Removes punctuation from the string 
+#                dat = dat.split(' ')
+#                for each in dat:
+#                   each = each.lower()
+#                   if each not in positive.keys():
+#                      positive[each] = 1
+#                   else:
+#                      positive[each] = positive[each] + 1
+# 
+#       self.save(positive, 'positive_counts.dat')
+#       self.save(negative, 'negative_counts.dat')
+# 
+#       return(positive, negative)
 
     
    def classify(self, sText):
