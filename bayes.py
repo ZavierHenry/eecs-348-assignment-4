@@ -33,8 +33,8 @@ class Bayes_Classifier:
          self.positive, self.negative = self.train()
          self.posCounts = self.positive['total_counts']
          self.negCounts = self.negative['total_counts']
-         self.posOccurences = self.positive['occurences!']
-         self.negOccurences = self.negative['occurences!']
+         self.posOccurences = float(self.positive['occurences!'])
+         self.negOccurences = float(self.negative['occurences!'])
          self.totOccurences = self.posOccurences + self.negOccurences
 
          # ret = self.train()
@@ -59,10 +59,10 @@ class Bayes_Classifier:
          
          if re.match("movies-5-", filename):
             edit_dict = positive
-            edit_dict['occurences!'] += 1
          else:
             edit_dict = negative
-            edit_dict['occurences!'] += 1
+            
+         edit_dict['occurences!'] += 1
 
          for token in dat:
             token = token.lower()
@@ -118,18 +118,25 @@ class Bayes_Classifier:
       class to which the target string belongs (i.e., positive, negative or neutral).
       """
       dat = self.tokenize(sText)
-      logPositive = 0
-      logNegative = 0
+      logPositive = math.log(self.posOccurences/self.totOccurences)
+      logNegative = math.log(self.negOccurences/self.totOccurences)
       for token in dat:
          if token not in string.punctuation:
             if token in self.positive:
                logPositive += math.log((self.positive[token] + 1.0) / self.posCounts)
+            else:
+               logPositive += math.log(1.0 / self.posCounts)
 
             if token in self.negative:
                logNegative += math.log((self.negative[token] + 1.0) / self.negCounts)
+            else:
+               logNegative += math.log(1.0 / self.negCounts)
+               
+               
       print logPositive, logNegative
-      print self.posOccurences/self.totOccurences, self.negOccurences/self.totOccurences
-      if ((math.log(self.posOccurences/self.totOccurences)) + logPositive) > (math.log(self.negOccurences/self.totOccurences) * logNegative):
+      
+      
+      if (logPositive > logNegative):
          return 'Positive'
       else:
          return 'Negative'
@@ -181,6 +188,6 @@ class Bayes_Classifier:
       return lTokens
 
 classif = Bayes_Classifier()
-print classif.classify("lovely"), classif.positive["lovely"], classif.negative["lovely"]
+print classif.classify("amazing")
 
 
