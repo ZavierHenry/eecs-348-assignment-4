@@ -47,34 +47,42 @@ class Bayes_Classifier:
             lFileList = fFileObj[2]
             break
         random.shuffle(lFileList)
-        step = len(lFileList) / 10
+        step = int(round(len(lFileList) / 10.0, 0))
+
 
         # train 90 percent of the data self.positive , self.negative = self.train(90 percent of data)
         # classify the remaining 10 percent self.classify(10 percent of dats) record results
 
-
+        correct = 0.0
+        total = 0.0
         for i in range(10):
             self.positive, self.negative = self.train(lFileList[:i*step]+lFileList[(i+1)*step:])
-            print "Iteration: " + str(i)
             for filename in lFileList[i*step:(i+1)*step]:
-                print self.classify(self.loadFile("movies_reviews/" + filename))
+                ret = self.classify(self.loadFile("movies_reviews/" + filename))
+                if re.match("movies-5-", filename):
+                    if ret == "Positive":
+                        correct += 1
+                elif re.match("movies-1-", filename):
+                    if ret == "Negative":
+                        correct += 1
+                total += 1
+        print correct/total
 
 
 
-    def train(self, train=[]):
+    def train(self, training=[]):
         """Trains the Naive Bayes Sentiment Classifier."""
-        
-        if not train:
-           train = []
+
+        if not training:
            for fFileObj in os.walk("movies_reviews/"):
-               train = fFileObj[2]
+               training = fFileObj[2]
                break
 
 
         positive = {'total_counts': 0, 'occurences!':0}
         negative = {'total_counts': 0, 'occurences!' : 0}
 
-        for filename in train:
+        for filename in training:
             dat = self.loadFile("movies_reviews/" + filename)
             dat = self.tokenize(dat)
 
@@ -122,7 +130,7 @@ class Bayes_Classifier:
                     logNegative += math.log(1.0 / self.negCounts)
 
 
-        print logPositive, logNegative
+        #print logPositive, logNegative
 
 
         if (logPositive > logNegative):
