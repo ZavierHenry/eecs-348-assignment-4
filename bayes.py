@@ -63,8 +63,12 @@ class Bayes_Classifier:
 
     def train(self, train=[]):
         """Trains the Naive Bayes Sentiment Classifier."""
-
-
+        
+        if not train:
+           train = []
+           for fFileObj in os.walk("movies_reviews/"):
+               train = fFileObj[2]
+               break
 
 
         positive = {'total_counts': 0, 'occurences!':0}
