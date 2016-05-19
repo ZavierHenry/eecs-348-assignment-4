@@ -55,18 +55,31 @@ class Bayes_Classifier:
 
         correct = 0.0
         total = 0.0
+        posClassif = 0.0
+        negClassif = 0.0
+        posCorrect = 0.0
+        negCorrect = 0.0
         for i in range(10):
-            self.positive, self.negative = self.train(lFileList[:i*step]+lFileList[(i+1)*step:])
-            for filename in lFileList[i*step:(i+1)*step]:
+            self.positive, self.negative = self.train(lFileList[:i * step] + lFileList[(i + 1) * step:])
+            self.posCounts = self.positive['total_counts']
+            self.negCounts = self.negative['total_counts']
+            self.posOccurences = float(self.positive['occurences!'])
+            self.negOccurences = float(self.negative['occurences!'])
+            self.totOccurences = self.posOccurences + self.negOccurences
+            for filename in lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
                 if re.match("movies-5-", filename):
+                    posClassif += 1
                     if ret == "Positive":
+                        posCorrect += 1
                         correct += 1
                 elif re.match("movies-1-", filename):
+                    negClassif += 1
                     if ret == "Negative":
+                        negCorrect += 1
                         correct += 1
                 total += 1
-        print correct/total
+        print correct / total, "Positive Precision: ", posCorrect / posClassif, "Negative Precision: ", negCorrect / negClassif, posCorrect, negCorrect
 
 
 
