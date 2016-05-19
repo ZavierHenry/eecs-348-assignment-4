@@ -59,6 +59,8 @@ class Bayes_Classifier:
         negClassif = 0.0
         posCorrect = 0.0
         negCorrect = 0.0
+        totPosPrec = 0.0
+        totNegprec = 0.0
         for i in range(10):
             self.positive, self.negative = self.train(lFileList[:i * step] + lFileList[(i + 1) * step:])
             self.posCounts = self.positive['total_counts']
@@ -68,20 +70,46 @@ class Bayes_Classifier:
             self.totOccurences = self.posOccurences + self.negOccurences
             for filename in lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
-                if re.match("movies-5-", filename):
+                if ret == 'Positive':
                     posClassif += 1
-                    if ret == "Positive":
+                    if re.match("movies-5-", filename):
                         posCorrect += 1
                         correct += 1
-                elif re.match("movies-1-", filename):
+                else:
                     negClassif += 1
-                    if ret == "Negative":
+                    if re.match("movies-1-", filename):
                         negCorrect += 1
                         correct += 1
+
                 total += 1
-        print correct / total, "Positive Precision: ", posCorrect / posClassif, "Negative Precision: ", negCorrect / negClassif, posCorrect, negCorrect
+            if posClassif == 0:
+                posprecision = 1
+            else:
+                posprecision = posCorrect / posClassif
+            if negClassif == 0:
+                negprecision = 1
+            else:
+                negprecision = negCorrect / negClassif
 
+            totPosPrec += posprecision
+            totNegprec += negprecision
 
+            print correct / total, "Positive Precision: ", posprecision, "Negative Precision: ", negprecision
+        print correct / total, "Total Positive Precision: ", totPosPrec/10 , "Total Negative Precision: ", totNegprec/10, posCorrect, negCorrect
+        #         if re.match("movies-5-", filename):
+        #             posClassif += 1
+        #             if ret == "Positive":
+        #                 posCorrect += 1
+        #                 correct += 1
+        #         else:
+        #             negClassif += 1
+        #             if ret == "Negative":
+        #                 negCorrect += 1
+        #                 correct += 1
+        #         total += 1
+        #     print correct / total, "Positive Precision: ", posCorrect / posClassif, "Negative Precision: ", negCorrect / negClassif
+        #
+        # print correct / total, "Total Positive Precision: ", posCorrect / posClassif, "Total Negative Precision: ", negCorrect / negClassif, posCorrect, negCorrect
 
     def train(self, training=[]):
         """Trains the Naive Bayes Sentiment Classifier."""
