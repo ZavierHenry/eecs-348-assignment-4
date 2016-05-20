@@ -42,8 +42,26 @@ class Bayes_Classifier:
         for fFileObj in os.walk("movies_reviews/"):
             lFileList = fFileObj[2]
             break
+        # posT = 0
+        # negT =0
+        # index = 0
+        # buffer = []
+        # while posT <= 2000 or negT <= 2000:
+        #     if re.match("movies-5-", lFileList[index]):
+        #         if posT == (2000):
+        #             continue
+        #         buffer.append(lFileList[index])
+        #         posT += 1
+        #     elif re.match("movies-1-", lFileList[index]):
+        #         if negT == (2000):
+        #             continue
+        #         buffer.append(lFileList[index])
+        #         negT += 1
+        #     index += 1
+        # print 'done'
+        # lFileList = buffer
         random.shuffle(lFileList)
-        subsec = chunkify(lFileList, 10)
+        #subsec = chunkify(lFileList, 10)
 
         step = int(round(len(lFileList) / 10.0, 0))
 
@@ -69,13 +87,8 @@ class Bayes_Classifier:
         totNegRecall = 0.0
 
         for i in range(10):
-            self.positive, self.negative = self.train(list(itertools.chain(*(subsec[:i] + subsec[i+1:])))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
-            self.posCounts = self.positive['total_counts']
-            self.negCounts = self.negative['total_counts']
-            self.posOccurences = float(self.positive['occurences!'])
-            self.negOccurences = float(self.negative['occurences!'])
-            self.totOccurences = self.posOccurences + self.negOccurences
-            for filename in subsec[i]: #lFileList[i * step:(i + 1) * step]:
+            self.train(lFileList[:i * step] + lFileList[(i + 1) * step:])
+            for filename in lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
                 if ret == 'Positive':
                     posClassif += 1
@@ -155,16 +168,28 @@ class Bayes_Classifier:
 
             edit_dict['occurences!'] += 1
 
-            for token in dat:
-                token = token.lower()
+            for token_index in range(len(dat)):
+                token = dat[token_index].lower()
+                edit_dict['total_counts'] += 1
+                
                 # if token in string.punctuation:
                 #     continue
-                if token not in edit_dict:
+                if token_index not in edit_dict:
                     edit_dict[token] = 1
-                    edit_dict['total_counts'] += 1
                 else:
                     edit_dict[token] += 1
+                    
+                    
+                if token_index != 0:
                     edit_dict['total_counts'] += 1
+                    bigram = (dat[token_index-1].lower(), token)
+                    
+                    if bigram not in edit_dict:
+                        edit_dict[bigram] = 1
+                    else:
+                        edit_dict[bigram] += 1
+                
+                
 
         self.save(positive, 'positive_counts_2.dat')
         self.save(negative, 'negative_counts_2.dat')
@@ -184,7 +209,10 @@ class Bayes_Classifier:
         dat = self.tokenize(sText)
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
-        for token in dat:
+        for token_index in range(len(dat)):
+            
+            token = dat[token_index].lower()
+            
             #if token not in string.punctuation:
             if token in self.positive or self.negative:
                 if token in self.positive:
@@ -196,6 +224,20 @@ class Bayes_Classifier:
                     logNegative += math.log((self.negative[token] + 1.0) / self.negCounts)
                 else:
                     logNegative += math.log(1.0 / self.negCounts)
+                    
+            if token_index != 0:
+                bigram = (dat[token_index-1].lower(), token)
+                if bigram in self.positive:
+                    logPositive += math.log((self.positive[bigram] + 1.0) / self.posCounts)
+                else:
+                    logPositive += math.log(1.0 / self.posCounts)
+
+                if bigram in self.negative:
+                    logNegative += math.log((self.negative[bigram] + 1.0) / self.negCounts)
+                else:
+                    logNegative += math.log(1.0 / self.negCounts)
+                    
+        #test comment
 
 
         if (logPositive > logNegative):
@@ -321,5 +363,5 @@ class Bayes_Classifier:
 
 classif = Bayes_Classifier()
 # print classif.classify("Awful, awful, awful. Nick Cage's worst movie and this is the guy who made Con Air. Magnetic boots that hold prisoners in place? What am I six years old?")
-classif.tenFold()
+classif.crossFold()
 

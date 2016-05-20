@@ -69,12 +69,7 @@ class Bayes_Classifier:
         totNegRecall = 0.0
 
         for i in range(10):
-            self.positive, self.negative = self.train(list(itertools.chain(*(subsec[:i] + subsec[i+1:])))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
-            self.posCounts = self.positive['total_counts']
-            self.negCounts = self.negative['total_counts']
-            self.posOccurences = float(self.positive['occurences!'])
-            self.negOccurences = float(self.negative['occurences!'])
-            self.totOccurences = self.posOccurences + self.negOccurences
+            self.train(list(itertools.chain(*(subsec[:i] + subsec[i+1:])))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
             for filename in subsec[i]: #lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
                 if ret == 'Positive':
@@ -185,6 +180,7 @@ class Bayes_Classifier:
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
         for token in dat:
+            token = token.lower()
             #if token not in string.punctuation:
             if token in self.positive or self.negative:
                 if token in self.positive:
@@ -321,5 +317,5 @@ class Bayes_Classifier:
 
 classif = Bayes_Classifier()
 # print classif.classify("Awful, awful, awful. Nick Cage's worst movie and this is the guy who made Con Air. Magnetic boots that hold prisoners in place? What am I six years old?")
-classif.tenFold()
+classif.crossFold()
 
