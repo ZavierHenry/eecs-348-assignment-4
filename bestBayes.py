@@ -155,16 +155,28 @@ class Bayes_Classifier:
 
             edit_dict['occurences!'] += 1
 
-            for token in dat:
-                token = token.lower()
+            for token_index in range(len(dat)):
+                token = dat[token_index].lower()
+                edit_dict['total_counts'] += 1
+                
                 # if token in string.punctuation:
                 #     continue
-                if token not in edit_dict:
+                if token_index not in edit_dict:
                     edit_dict[token] = 1
-                    edit_dict['total_counts'] += 1
                 else:
                     edit_dict[token] += 1
+                    
+                    
+                if token_index != 0:
                     edit_dict['total_counts'] += 1
+                    bigram = (dat[token_index-1].lower(), token)
+                    
+                    if bigram not in edit_dict:
+                        edit_dict[bigram] = 1
+                    else:
+                        edit_dict[bigram] += 1
+                
+                
 
         self.save(positive, 'positive_counts_2.dat')
         self.save(negative, 'negative_counts_2.dat')
@@ -184,7 +196,10 @@ class Bayes_Classifier:
         dat = self.tokenize(sText)
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
-        for token in dat:
+        for token_index in range(len(dat)):
+            
+            token = dat[token_index].lower()
+            
             #if token not in string.punctuation:
             if token in self.positive or self.negative:
                 if token in self.positive:
@@ -194,6 +209,18 @@ class Bayes_Classifier:
 
                 if token in self.negative:
                     logNegative += math.log((self.negative[token] + 1.0) / self.negCounts)
+                else:
+                    logNegative += math.log(1.0 / self.negCounts)
+                    
+            if token_index != 0:
+                bigram = (dat[token_index-1].lower(), token)
+                if bigram in self.positive:
+                    logPositive += math.log((self.positive[bigram] + 1.0) / self.posCounts)
+                else:
+                    logPositive += math.log(1.0 / self.posCounts)
+
+                if bigram in self.negative:
+                    logNegative += math.log((self.negative[bigram] + 1.0) / self.negCounts)
                 else:
                     logNegative += math.log(1.0 / self.negCounts)
 
