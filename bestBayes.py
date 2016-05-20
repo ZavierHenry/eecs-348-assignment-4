@@ -223,6 +223,8 @@ class Bayes_Classifier:
                     logNegative += math.log((self.negative[bigram] + 1.0) / self.negCounts)
                 else:
                     logNegative += math.log(1.0 / self.negCounts)
+                    
+        #test comment
 
 
         if (logPositive > logNegative):
