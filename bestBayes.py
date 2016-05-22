@@ -42,26 +42,8 @@ class Bayes_Classifier:
         for fFileObj in os.walk("movies_reviews/"):
             lFileList = fFileObj[2]
             break
-        # posT = 0
-        # negT =0
-        # index = 0
-        # buffer = []
-        # while posT <= 2000 or negT <= 2000:
-        #     if re.match("movies-5-", lFileList[index]):
-        #         if posT == (2000):
-        #             continue
-        #         buffer.append(lFileList[index])
-        #         posT += 1
-        #     elif re.match("movies-1-", lFileList[index]):
-        #         if negT == (2000):
-        #             continue
-        #         buffer.append(lFileList[index])
-        #         negT += 1
-        #     index += 1
-        # print 'done'
-        # lFileList = buffer
         random.shuffle(lFileList)
-        #subsec = chunkify(lFileList, 10)
+        subsec = chunkify(lFileList, 10)
 
         step = int(round(len(lFileList) / 10.0, 0))
 
@@ -86,9 +68,20 @@ class Bayes_Classifier:
         totPosRecall = 0.0
         totNegRecall = 0.0
 
+    
         for i in range(10):
-            self.train(lFileList[:i * step] + lFileList[(i + 1) * step:])
-            for filename in lFileList[i * step:(i + 1) * step]:
+            
+            # self.positive, self.negative = self.train([name for names
+
+
+            self.train([name for index, names in enumerate(subsec) for name in names if index != i])
+            # self.positive, self.negative = self.train(list(itertools.chain.from_iterable(subsec[:i] + subsec[i+1:]))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
+            self.posCounts = self.positive['total_counts']
+            self.negCounts = self.negative['total_counts']
+            self.posOccurences = float(self.positive['occurences!'])
+            self.negOccurences = float(self.negative['occurences!'])
+            self.totOccurences = self.posOccurences + self.negOccurences
+            for filename in subsec[i]: #lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
                 if ret == 'Positive':
                     posClassif += 1
@@ -152,19 +145,25 @@ class Bayes_Classifier:
            for fFileObj in os.walk("movies_reviews/"):
                training = fFileObj[2]
                break
+            
 
 
         positive = {'total_counts': 0, 'occurences!':0}
         negative = {'total_counts': 0, 'occurences!' : 0}
 
         for filename in training:
+            
+            if re.match("movies-5-", filename):
+                edit_dict = positive
+            elif re.match("movies-1-", filename):
+                edit_dict = negative
+            else:
+                continue
+            
+            
             dat = self.loadFile("movies_reviews/" + filename)
             dat = self.tokenize(dat)
 
-            if re.match("movies-5-", filename):
-                edit_dict = positive
-            else:
-                edit_dict = negative
 
             edit_dict['occurences!'] += 1
 
@@ -201,6 +200,8 @@ class Bayes_Classifier:
         self.posOccurences = float(self.positive['occurences!'])
         self.negOccurences = float(self.negative['occurences!'])
         self.totOccurences = self.posOccurences + self.negOccurences
+        
+        
 
     def classify(self, sText):
         """Given a target string sText, this function returns the most likely document
@@ -364,4 +365,11 @@ class Bayes_Classifier:
 classif = Bayes_Classifier()
 # print classif.classify("Awful, awful, awful. Nick Cage's worst movie and this is the guy who made Con Air. Magnetic boots that hold prisoners in place? What am I six years old?")
 classif.crossFold()
+
+
+
+
+
+
+
 
