@@ -4,6 +4,7 @@
 #
 #
 
+from nltk import bigrams
 import math, os, pickle, re
 import string
 import random
@@ -62,13 +63,14 @@ class Bayes_Classifier:
             
             
             dat = self.loadFile("movies_reviews/" + filename)
+            [x.lower() for x in dat] #cast all to lowercase
             dat = self.tokenize(dat)
-
+            dat += list(bigrams(dat))
 
             edit_dict['occurences!'] += 1 #Increments the number of positive/negative reviews
 
             for token_index in range(len(dat)): #Iterate through all the tokens in the given review.
-                token = dat[token_index].lower() #Cast to lower_case
+                token = dat[token_index]
                 edit_dict['total_counts'] += 1 #Increment the counter for every token that appears. This is counting the total number of features found across a given class type.
                 
                 # if token in string.punctuation:
@@ -77,18 +79,7 @@ class Bayes_Classifier:
                     edit_dict[token] = 1
                 else: #if the token has been visited before increment the counter +1
                     edit_dict[token] += 1
-                    
-                    
-                if token_index != 0: #Start mapping bigrams together once the second token is touched
-                    edit_dict['total_counts'] += 1 #increments the feature count. Bigrams are features.
-                    bigram = (dat[token_index-1].lower(), token) #creates a touple that represent words that are grouped together
-                    
-                    if bigram not in edit_dict: #if the bigram has not been seen before add it to the dictionary
-                        edit_dict[bigram] = 1
-                    else: #If the bigram already exist increment the count for +!
-                        edit_dict[bigram] += 1
-                
-                
+
 
         self.save(positive, 'positive_counts_2.dat') #Save the resulting positive dictionary to memory
         self.save(negative, 'negative_counts_2.dat') #Save the resulting negative dictionary to memory
@@ -109,11 +100,13 @@ class Bayes_Classifier:
         class to which the target string belongs (i.e., positive, negative or neutral).
         """
         dat = self.tokenize(sText)
+        [x.lower() for x in dat] #cast all to lowercase
+        dat += list(bigrams(dat))
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
         for token_index in range(len(dat)):
 
-            token = dat[token_index].lower()
+            token = dat[token_index]
 
             #if token not in string.punctuation:
             if token in self.positive or self.negative: #Checks to see if the token exist in at least one of the dictionaries
@@ -126,19 +119,6 @@ class Bayes_Classifier:
                     logNegative += math.log((self.negative[token] + 1.0) / self.negCounts) #Calculates conditional probability of token for negative
                 else:
                     logNegative += math.log(1.0 / self.negCounts) #Smoothing
-                    
-            if token_index != 0:
-                bigram = (dat[token_index-1].lower(), token) #Checks to see if a bigram occurs in at least one of the dictionaries
-                if bigram in self.positive:
-                    logPositive += math.log((self.positive[bigram] + 1.0) / self.posCounts) #Calculates conditional probability of bigram for positive
-                else:
-                    logPositive += math.log(1.0 / self.posCounts) #Smoothing
-
-                if bigram in self.negative:
-                    logNegative += math.log((self.negative[bigram] + 1.0) / self.negCounts) #Calculates conditional probability of bigram for negative
-                else:
-                    logNegative += math.log(1.0 / self.negCounts) #Smoothing
-
 
 
         if (logPositive > logNegative): #Returns the largest log probability.

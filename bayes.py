@@ -5,7 +5,6 @@
 #
 neutral_threshold = 0.1;
 import math, os, pickle, re
-import nltk
 import string
 import random
 import itertools
