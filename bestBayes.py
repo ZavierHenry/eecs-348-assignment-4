@@ -73,7 +73,7 @@ class Bayes_Classifier:
                 
                 # if token in string.punctuation:
                 #     continue
-                if token_index not in edit_dict: #If the token has not been visited before instantiate it in the dictionary with a count of 1
+                if token not in edit_dict: #If the token has not been visited before instantiate it in the dictionary with a count of 1
                     edit_dict[token] = 1
                 else: #if the token has been visited before increment the counter +1
                     edit_dict[token] += 1
@@ -112,9 +112,9 @@ class Bayes_Classifier:
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
         for token_index in range(len(dat)):
-            
+
             token = dat[token_index].lower()
-            
+
             #if token not in string.punctuation:
             if token in self.positive or self.negative: #Checks to see if the token exist in at least one of the dictionaries
                 if token in self.positive:
@@ -217,7 +217,7 @@ class Bayes_Classifier:
             results = self.evaluate(lFileList[i * step:][:step]) #Test with the other 10 persent.
 
 
-            #Adds results to the containers for recall, precision, and f-measures
+            #Adds results to the containers for recall, precision, and f-measure
             pos_recalls.append(results['posrecall'])
             pos_precisions.append(results['posprecision'])
             pos_fmeasures.append(results['posf'])
@@ -322,11 +322,7 @@ class Bayes_Classifier:
 
             self.train([name for index, names in enumerate(subsec) for name in names if index != i])
             # self.positive, self.negative = self.train(list(itertools.chain.from_iterable(subsec[:i] + subsec[i+1:]))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
-            self.posCounts = self.positive['total_counts']
-            self.negCounts = self.negative['total_counts']
-            self.posOccurences = float(self.positive['occurences!'])
-            self.negOccurences = float(self.negative['occurences!'])
-            self.totOccurences = self.posOccurences + self.negOccurences
+
             for filename in subsec[i]: #lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
                 if ret == 'Positive':
@@ -362,27 +358,18 @@ class Bayes_Classifier:
             totNegprec += negprecision
             totPosRecall += posRecallCorrect/posRecall
             totNegRecall += negRecallCorrect/negRecall
+            print "Correct classification(Percent correct): ", correct / total, "Positive Precision: ", posprecision, "Negative Precision: ", negprecision, "Positive recall: ", posRecallCorrect/posRecall, "Negative recall: ", negRecallCorrect/negRecall
 
 
-            print correct / total, "Positive Precision: ", posprecision, "Negative Precision: ", negprecision, "Positive recall: ", posRecallCorrect/posRecall, "Negative recall: ", negRecallCorrect/negRecall
-        F1POS = (2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall)
-        F2POS = (2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall)
-        print correct / total, "Total Positive Precision: ", totPosPrec/10 , "Total Negative Precision: ", totNegprec/10, "average Positive recall: ", totPosRecall/10, "Negative recall: ", totNegRecall/10
-        print "Positive F1 measure: ", F1POS, "negative F1 measure: ", F2POS
-        #         if re.match("movies-5-", filename):
-        #             posClassif += 1
-        #             if ret == "Positive":
-        #                 posCorrect += 1
-        #                 correct += 1
-        #         else:
-        #             negClassif += 1
-        #             if ret == "Negative":
-        #                 negCorrect += 1
-        #                 correct += 1
-        #         total += 1
-        #     print correct / total, "Positive Precision: ", posCorrect / posClassif, "Negative Precision: ", negCorrect / negClassif
-        #
-        # print correct / total, "Total Positive Precision: ", posCorrect / posClassif, "Total Negative Precision: ", negCorrect / negClassif, posCorrect, negCorrect
+        F1POS = (2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall) * 10
+        F2POS = (2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall) * 10
+
+        print correct / total, "Total Positive Precision: ", totPosPrec/10
+        print "Total Negative Precision: ", totNegprec/10
+        print "average Positive recall: ", totPosRecall/10
+        print "Negative recall: ", totNegRecall/10
+        print "Positive F1 measure: ", F1POS
+        print "negative F1 measure: ", F2POS
 
 classif = Bayes_Classifier()
 # print classif.classify("Awful, awful, awful. Nick Cage's worst movie and this is the guy who made Con Air. Magnetic boots that hold prisoners in place? What am I six years old?")
