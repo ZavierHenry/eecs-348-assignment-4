@@ -63,9 +63,10 @@ class Bayes_Classifier:
             
             
             dat = self.loadFile("movies_reviews/" + filename)
-            [x.lower() for x in dat] #cast all to lowercase
+            dat = [x.lower() for x in dat] #cast all to lowercase
             dat = self.tokenize(dat)
             dat += list(bigrams(dat))
+            
 
             edit_dict['occurences!'] += 1 #Increments the number of positive/negative reviews
 
@@ -100,7 +101,7 @@ class Bayes_Classifier:
         class to which the target string belongs (i.e., positive, negative or neutral).
         """
         dat = self.tokenize(sText)
-        [x.lower() for x in dat] #cast all to lowercase
+        dat = [x.lower() for x in dat] #cast all to lowercase
         dat += list(bigrams(dat))
         logPositive = math.log(self.posOccurences/self.totOccurences)
         logNegative = math.log(self.negOccurences/self.totOccurences)
