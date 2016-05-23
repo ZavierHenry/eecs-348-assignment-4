@@ -249,8 +249,8 @@ class Bayes_Classifier:
             print "Correct classification(Percent correct): ", correct / total, "Positive Precision: ", posprecision, "Negative Precision: ", negprecision, "Positive recall: ", posRecallCorrect/posRecall, "Negative recall: ", negRecallCorrect/negRecall
 
 
-        F1POS = (2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall)
-        F2POS = (2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall)
+        F1POS = ((2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall)) / 10
+        F2POS = ((2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall)) / 10
 
         print "Final Aggregate Results"
         print "Classification Accuracy:", correct / total
