@@ -26,7 +26,7 @@ class Bayes_Classifier:
             break
 
 
-        if ('negative_counts.dat_2' and 'positive_counts_2.dat') in lFileList: #If a dictionary already exist load from that dictionaly
+        if ('negative_counts_2.dat' and 'positive_counts_2.dat') in lFileList: #If a dictionary already exist load from that dictionaly
             self.positive = self.load('positive_counts_2.dat') #Load in the positive dictionary
             self.negative = self.load('negative_counts_2.dat') #Load in the negative dictionary
             self.posCounts = self.positive['total_counts'] #load in the number of words in the positive dictionary
@@ -284,19 +284,23 @@ class Bayes_Classifier:
 
     #Disregard the function that follows. Tenfold/Evaluate are the functions we are using.
     def crossFold(self):
+        '''
+
+        :return: Returns results of 10 fold cross validation
+        '''
         lFileList = []
-        for fFileObj in os.walk("movies_reviews/"):
+        for fFileObj in os.walk("movies_reviews/"): #Steps through all files in the directory
             lFileList = fFileObj[2]
             break
         random.shuffle(lFileList)
-        subsec = chunkify(lFileList, 10)
-
-        step = int(round(len(lFileList) / 10.0, 0))
+        subsec = chunkify(lFileList, 10) #Splits the data into 10 equal parts
 
 
 
-        # train 90 percent of the data self.positive , self.negative = self.train(90 percent of data)
-        # classify the remaining 10 percent self.classify(10 percent of dats) record results
+        # train 90 percent of the data
+        # classify the remaining 10 percent self.classify(10 percent of data) record results
+
+        #Constants for precision, accuracy, and f values
 
         correct = 0.0
         total = 0.0
@@ -314,62 +318,62 @@ class Bayes_Classifier:
         totPosRecall = 0.0
         totNegRecall = 0.0
 
-
+        print "Crossfolding...."
         for i in range(10):
-
-            # self.positive, self.negative = self.train([name for names
-
-
-            self.train([name for index, names in enumerate(subsec) for name in names if index != i])
-            # self.positive, self.negative = self.train(list(itertools.chain.from_iterable(subsec[:i] + subsec[i+1:]))) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
-
+            print "Crossfold " + str(i + 1) + " results: "
+            self.train([name for index, names in enumerate(subsec) for name in names if index != i]) #(lFileList[:i * step] + lFileList[(i + 1) * step:])
             for filename in subsec[i]: #lFileList[i * step:(i + 1) * step]:
                 ret = self.classify(self.loadFile("movies_reviews/" + filename))
-                if ret == 'Positive':
+                if ret == 'Positive': #Checks to see if the movie was clasified as positive
                     posClassif += 1
-                    if re.match("movies-5-", filename):
+                    if re.match("movies-5-", filename): #checks to see if it was correctly classified as positive
                         posCorrect += 1
                         correct += 1
                 else:
                     negClassif += 1
-                    if re.match("movies-1-", filename):
+                    if re.match("movies-1-", filename): #Checks to see if it was correctly classified as negative
                         negCorrect += 1
                         correct += 1
-                if re.match("movies-5-", filename):
+                if re.match("movies-5-", filename): #Checks to see if the movie should be positive
                     posRecall += 1
-                    if ret == "Positive":
+                    if ret == "Positive": #Checks to see if it was recalled correctly
                         posRecallCorrect += 1
                 else:
                     negRecall += 1
-                    if ret == "Negative":
+                    if ret == "Negative": #Checks to see if the negative document was recalled correctly
                         negRecallCorrect += 1
 
                 total += 1
-            if posClassif == 0:
+            if posClassif == 0: #Smoothing
                 posprecision = 1
             else:
-                posprecision = posCorrect / posClassif
-            if negClassif == 0:
+                posprecision = posCorrect / posClassif #Calculates positive precision
+            if negClassif == 0: #Smoothing
                 negprecision = 1
             else:
-                negprecision = negCorrect / negClassif
+                negprecision = negCorrect / negClassif #Calculates negative precision
 
-            totPosPrec += posprecision
-            totNegprec += negprecision
+            totPosPrec += posprecision #Aggregates iterations
+            totNegprec += negprecision #Aggregates iterations
             totPosRecall += posRecallCorrect/posRecall
             totNegRecall += negRecallCorrect/negRecall
+
+
             print "Correct classification(Percent correct): ", correct / total, "Positive Precision: ", posprecision, "Negative Precision: ", negprecision, "Positive recall: ", posRecallCorrect/posRecall, "Negative recall: ", negRecallCorrect/negRecall
 
 
-        F1POS = (2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall) * 10
-        F2POS = (2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall) * 10
+        F1POS = (2 * totPosPrec * totPosRecall)/(totPosPrec + totPosRecall)
+        F2POS = (2 * totNegprec * totNegRecall)/(totNegprec + totNegRecall)
 
-        print correct / total, "Total Positive Precision: ", totPosPrec/10
-        print "Total Negative Precision: ", totNegprec/10
-        print "average Positive recall: ", totPosRecall/10
-        print "Negative recall: ", totNegRecall/10
+        print "Final Aggregate Results"
+        print "Classification Accuracy:", correct / total
+        print "Total Positive Precision: ", totPosPrec/10
+        print "Positive recall: ", totPosRecall/10
         print "Positive F1 measure: ", F1POS
-        print "negative F1 measure: ", F2POS
+        print "\n"
+        print "Total Negative Precision: ", totNegprec/10
+        print "Negative recall: ", totNegRecall/10
+        print "Negative F1 measure: ", F2POS
 
 classif = Bayes_Classifier()
 # print classif.classify("Awful, awful, awful. Nick Cage's worst movie and this is the guy who made Con Air. Magnetic boots that hold prisoners in place? What am I six years old?")
