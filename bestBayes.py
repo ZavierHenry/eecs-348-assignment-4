@@ -66,7 +66,7 @@ class Bayes_Classifier:
             dat = [x.lower() for x in dat] #cast all to lowercase
             dat = self.tokenize(dat)
             dat += list(bigrams(dat))
-            
+
 
             edit_dict['occurences!'] += 1 #Increments the number of positive/negative reviews
 
